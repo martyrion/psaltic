@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="Tone.js"></script>
+    <!-- <script src="tone-ui.js"></script> -->
+    <!-- <script src="components.js"></script> -->
+    <style>
+      body {
+        font-family: "ubuntu";
+      }
+
+      h1 {
+        width: 100%;
+        text-align: center;
+      }
+
+      div#content, div#durative {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: 100px;
+        grid-gap: 1px;
+        margin: 24px 36px;
+      }
+
+      div#buttonBar {
+        display: flex;
+        width: 100vw;
+        justify-content: center;
+      }
+
+      span {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+        background-color: blue;
+        transition: background-color 100ms linear;
+        text-align: center;
+        color: white;
+        line-height: 100px;
+      }
+
+      span:hover {
+        background-color: black;
+      }
+
+      #content {
+        margin: 24px 0px;
+      }
+
+      .played {
+        background-color: black;
+        transition: background-color 100ms linear;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <h1>Βυζαντινόν μουσικόν όργανον</h1>
+    <h1>Ήχος πλ. Α'</h1>
+    <div id="content">
+      <span class="scaleDegree" id="1">1</span>
+      <span class="scaleDegree" id="2">2</span>
+      <span class="scaleDegree" id="3">3</span>
+      <span class="scaleDegree" id="4">4</span>
+      <span class="scaleDegree" id="5">5</span>
+      <span class="scaleDegree" id="6">6</span>
+      <span class="scaleDegree" id="7">7</span>
+      <span class="scaleDegree" id="8">1</span>
+    </div>
+    <div id="durative">
+      <span class="scaleDegreeDur" id="1">1</span>
+      <span class="scaleDegreeDur" id="2">2</span>
+      <span class="scaleDegreeDur" id="3">3</span>
+      <span class="scaleDegreeDur" id="4">4</span>
+      <span class="scaleDegreeDur" id="5">5</span>
+      <span class="scaleDegreeDur" id="6">6</span>
+      <span class="scaleDegreeDur" id="7">7</span>
+      <span class="scaleDegreeDur" id="8">1</span>
+    </div>
+
+    <div id="buttonBar">
+      <button id="changeBase" onclick="changeBase()">Ορισμός βάσης</button>
+      <button id="randomDegree" onclick="randomDegree()">Τυχαία νότα</button>
+      <button id="lastDegree" onclick="repeatLast()">
+        Επανάληψη τελευταίας
+      </button>
+      <button id="playBase" onclick="playBase()">Βάση κλίμακας</button>
+      <button id="showAnswer" onclick="solution()">Αποκάλυψη απάντησης</button>
+    </div>
+    <p id="lastdegree"></p>
+    <input id="basefrequency" type="text" />
+    <script>
+      // sound 1
+      const appModes = ["free-play", "test"];
+      var appMode = "free-play";
+      var freq = 130.85;
+
+      const env = new Tone.AmplitudeEnvelope({
+        attack: 0.5,
+        attackCurve: "linear",
+        sustain: 0.6,
+        decay: 0.3,
+        release: 1,
+        releaseCurve: "linear",
+      }).toDestination();
+
+      // sound 2
+      // const env = new Tone.AmplitudeEnvelope({
+      //   attack: 0.11,
+      //   decay: 0.21,
+      //   sustain: 0.5,
+      //   release: 1.2,
+      // }).toDestination();
+
+      // create an oscillator and connect it to the envelope
+      const osc = new Tone.Oscillator({
+        partials: [100, 20, 20],
+        type: "custom",
+        frequency: freq,
+        volume: -8,
+      })
+        .connect(env)
+        .start();
+
+      start = (e) => env.triggerAttack();
+      stop = (e) => env.triggerRelease();
+
+      var lastdegree = 0;
+      var basefreq = 130.8;
+
+      var A_mode = [
+        {
+          degree: 1,
+          name: "ΠΑ",
+          ratioNormal: 1,
+          ratioAscending: 1,
+          ratioDescending: 1,
+        },
+        {
+          degree: 2,
+          name: "ΒΟΥ",
+          ratioNormal: 1.101,
+          ratioAscending: 1.101,
+          ratioDescending: 1.101,
+        },
+        {
+          degree: 3,
+          name: "ΓΑ",
+          ratioNormal: 1.189,
+          ratioAscending: 1.189,
+          ratioDescending: 1.189,
+        },
+        {
+          degree: 4,
+          name: "ΔΙ",
+          ratioNormal: 1.335,
+          ratioAscending: 1.335,
+          ratioDescending: 1.335,
+        },
+        {
+          degree: 5,
+          name: "ΚΕ",
+          ratioNormal: 1.498,
+          ratioAscending: 1.498,
+          ratioDescending: 1.498,
+        },
+        {
+          degree: 6,
+          name: "ΖΩ",
+          ratioNormal: 1.65,
+          ratioAscending: 1.65,
+          ratioDescending: 1.587,
+        },
+        {
+          degree: 7,
+          name: "ΝΗ",
+          ratioNormal: 1.782,
+          ratioAscending: 1.782,
+          ratioDescending: 1.782,
+        },
+        {
+          degree: 8,
+          name: "ΠΑ",
+          ratioNormal: 2,
+          ratioAscending: 2,
+          ratioDescending: 2,
+        },
+        {
+          chords: [
+            {
+              name: "chord1",
+              degrees: [1, 3, 5],
+            },
+            {
+              name: "chord2",
+              degrees: [2, 4, 7],
+            },
+          ],
+        },
+      ];
+      var PL_D_mode = [
+        {
+          degree: 1,
+          ratioNormal: 1,
+          ratioAscending: 1,
+          ratioDescending: 1,
+        },
+        {
+          degree: 2,
+          ratioNormal: 1.124,
+          ratioAscending: 1.124,
+          ratioDescending: 1.124,
+        },
+        {
+          degree: 3,
+          ratioNormal: 1.236,
+          ratioAscending: 1.236,
+          ratioDescending: 1.236,
+        },
+        {
+          degree: 4,
+          ratioNormal: 1.335,
+          ratioAscending: 1.335,
+          ratioDescending: 1.335,
+        },
+        {
+          degree: 5,
+          ratioNormal: 1.498,
+          ratioAscending: 1.498,
+          ratioDescending: 1.498,
+        },
+        {
+          degree: 6,
+          ratioNormal: 1.682,
+          ratioAscending: 1.682,
+          ratioDescending: 1.682,
+        },
+        {
+          degree: 7,
+          ratioNormal: 1.852,
+          ratioAscending: 1.852,
+          ratioDescending: 1.782,
+        },
+        {
+          degree: 8,
+          ratioNormal: 2,
+          ratioAscending: 2,
+          ratioDescending: 2,
+        },
+      ];
+
+      changeBase = () => {
+        basefreq = document.getElementById("basefrequency").value;
+      };
+
+      var scale = A_mode;
+
+      play = (degree) => {
+        freq = scale[degree - 1].ratioNormal * basefreq;
+
+        if (lastdegree > degree) {
+          freq = scale[degree - 1].ratioDescending * basefreq;
+        } else if (lastdegree < degree) {
+          var freq = scale[degree - 1].ratioAscending * basefreq;
+        } else {
+          var freq = scale[degree - 1].ratioNormal * basefreq;
+        }
+
+        osc.set({ frequency: freq });
+        start();
+        lastdegree = degree;
+        document.getElementById("lastdegree").innerHTML = lastdegree;
+      };
+
+      const scaleDegreeElements = document.querySelectorAll(".scaleDegree");
+      const scaleDegreeElementsDur = document.querySelectorAll(".scaleDegreeDur")
+      
+      
+      scaleDegreeElements.forEach((element) => {
+        let degree = element.id;
+        element.addEventListener("mouseenter", function () {
+          play(degree);
+        });
+        element.addEventListener("mouseleave", function () {
+          stop();
+        });
+      });
+
+
+      scaleDegreeElementsDur.forEach((element) => {
+        let degree = element.id;
+        element.addEventListener("click", function () {
+          play(degree);
+        });
+        element.addEventListener("mouseup", function () {
+          stop();
+        });
+      });
+
+
+
+
+      randomNumber = (min, max) => {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      };
+
+      randomDegree = () => {
+        let degree = randomNumber(1, 8);
+        lastdegree = degree;
+        play(degree);
+        setTimeout(function () {
+          stop();
+        }, 1000);
+      };
+
+      repeatLast = () => {
+        play(lastdegree);
+        setTimeout(function () {
+          stop();
+        }, 1000);
+      };
+
+      playBase = () => {
+        freq = scale[0].ratioNormal * basefreq;
+        osc.set({ frequency: freq });
+        start();
+        document.getElementById("1").classList.add("played");
+        timeout(lastdegree);
+      };
+
+      timeout = (id) => {
+        setTimeout(function () {
+          stop();
+          document.getElementById(id).classList.remove("played");
+        }, 1000);
+      };
+
+
+      solutionPart = (i) => {
+        freq = scale[i - 1].ratioNormal * basefreq;
+        osc.set({ frequency: freq });
+        start();
+        document.getElementById(i).classList.add("played");
+        setTimeout(function () {
+          stop();
+          document.getElementById(i).classList.remove("played");
+        }, 1000);
+      }
+
+      
+      solution = () =>{
+        
+        for (i > lastdegree; i > 0; i--) {
+          solutionPart(i);
+        };
+      }
+
+    </script>
+  </body>
+
+</html>
